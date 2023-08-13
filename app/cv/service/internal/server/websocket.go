@@ -19,19 +19,13 @@ type Message struct {
 }
 
 func NewWebsocketServer(c *conf.Server) *websocket.Server {
-	opts := make([]websocket.ServerOption, 0)
-	if c.Websocket.Network != "" {
-		opts = append(opts, websocket.WithNetwork(c.Websocket.Network))
-	}
-	if c.Websocket.Addr != "" {
-		opts = append(opts, websocket.WithAddress(c.Websocket.Addr))
-	}
-	if c.Websocket.Timeout != nil {
-		opts = append(opts, websocket.WithTimeout(c.Websocket.Timeout.AsDuration()))
-	}
-	opts = append(opts, websocket.WithConnectHandle(connectHandler))
-	opts = append(opts, websocket.WithCodec("json"))
-	server := websocket.NewServer(opts...)
+	server := websocket.NewServer(
+		websocket.WithAddress(c.Websocket.Addr),
+		websocket.WithTimeout(c.Websocket.Timeout.AsDuration()),
+		websocket.WithPath("/ws"),
+		websocket.WithCodec("json"),
+		websocket.WithConnectHandle(connectHandler),
+	)
 
 	server.RegisterMessageHandler(MessageTypeChat,
 		func(sessionId websocket.SessionID, payload websocket.MessagePayload) error {
